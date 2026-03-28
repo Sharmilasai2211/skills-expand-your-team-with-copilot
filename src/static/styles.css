@@ -187,7 +187,98 @@ section h3 {
   margin-top: auto;
   padding-top: 10px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Share button and dropdown */
+.share-container {
+  position: relative;
+  width: 100%;
+}
+
+.share-button {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0;
+  text-transform: none;
+  font-weight: normal;
+  letter-spacing: 0;
+  box-shadow: none;
+}
+
+.share-button:hover {
+  background-color: var(--border-light);
+  border-color: var(--border-focus);
+  color: var(--text-primary);
+}
+
+.share-dropdown {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.share-dropdown.show {
+  display: block;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  font-weight: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 0;
+}
+
+.share-option:hover {
+  background-color: var(--border-light);
+}
+
+.share-whatsapp { color: #25D366; }
+.share-twitter   { color: #000000; }
+.share-facebook  { color: #1877F2; }
+.share-copy      { color: var(--primary); }
+
+/* Highlight a shared activity (from ?activity= URL parameter) */
+@keyframes highlight-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(83, 75, 174, 0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(83, 75, 174, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(83, 75, 174, 0); }
+}
+
+.activity-card.highlighted {
+  border-color: var(--primary);
+  animation: highlight-pulse 1.5s ease 2;
 }
 
 /* Activity Tag */

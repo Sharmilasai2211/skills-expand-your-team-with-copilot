@@ -568,6 +568,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `
         }
+        <div class="share-container">
+          <button class="share-button" title="Share this activity">⤴ Share Activity</button>
+          <div class="share-dropdown">
+            <a class="share-option share-whatsapp" href="#" target="_blank" rel="noopener noreferrer">📱 WhatsApp</a>
+            <a class="share-option share-twitter" href="#" target="_blank" rel="noopener noreferrer">🐦 Twitter / X</a>
+            <a class="share-option share-facebook" href="#" target="_blank" rel="noopener noreferrer">👍 Facebook</a>
+            <button class="share-option share-copy">🔗 Copy Link</button>
+          </div>
+        </div>
       </div>
     `;
 
@@ -586,6 +595,82 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Set up share functionality
+    const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(name)}`;
+    const shareText = `Check out ${name} at Mergington High School!\n${details.description}\nSchedule: ${formattedSchedule}`;
+
+    const shareButton = activityCard.querySelector(".share-button");
+    const shareDropdown = activityCard.querySelector(".share-dropdown");
+
+    // Toggle share dropdown
+    shareButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.querySelectorAll(".share-dropdown.show").forEach((d) => {
+        if (d !== shareDropdown) d.classList.remove("show");
+      });
+      shareDropdown.classList.toggle("show");
+    });
+
+    // WhatsApp
+    activityCard.querySelector(".share-whatsapp").addEventListener("click", (e) => {
+      e.preventDefault();
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      shareDropdown.classList.remove("show");
+    });
+
+    // Twitter / X
+    activityCard.querySelector(".share-twitter").addEventListener("click", (e) => {
+      e.preventDefault();
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      shareDropdown.classList.remove("show");
+    });
+
+    // Facebook
+    activityCard.querySelector(".share-facebook").addEventListener("click", (e) => {
+      e.preventDefault();
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      shareDropdown.classList.remove("show");
+    });
+
+    // Copy link
+    activityCard.querySelector(".share-copy").addEventListener("click", () => {
+      const copyAndNotify = () => showMessage("Link copied to clipboard!", "success");
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(copyAndNotify).catch(() => {
+          showMessage("Could not copy link. Please copy it manually: " + shareUrl, "info");
+        });
+      } else {
+        // Fallback for browsers without clipboard API
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand("copy");
+          copyAndNotify();
+        } catch {
+          showMessage("Could not copy link. Please copy it manually: " + shareUrl, "info");
+        }
+        document.body.removeChild(textArea);
+      }
+      shareDropdown.classList.remove("show");
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -861,8 +946,34 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeRangeFilter,
   };
 
+  // Close any open share dropdowns when clicking outside a share container
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".share-dropdown.show").forEach((d) => {
+      d.classList.remove("show");
+    });
+  });
+
+  // Highlight an activity shared via ?activity= URL parameter
+  function highlightSharedActivity() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedActivity = urlParams.get("activity");
+    if (!sharedActivity) return;
+
+    const normalizedTarget = sharedActivity.trim().toLowerCase();
+    const cards = document.querySelectorAll(".activity-card");
+    cards.forEach((card) => {
+      const title = card.querySelector("h4");
+      if (title && title.textContent.trim().toLowerCase() === normalizedTarget) {
+        card.classList.add("highlighted");
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  }
+
   // Initialize app
   checkAuthentication();
   initializeFilters();
-  fetchActivities();
+  fetchActivities().then(highlightSharedActivity).catch(() => {
+    // Activities failed to load; highlight attempt is skipped gracefully
+  });
 });
